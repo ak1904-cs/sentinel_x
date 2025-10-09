@@ -1,23 +1,29 @@
-import re
-import numpy as np
 from transformers import pipeline
 
-# Load a pre-trained model (zero-shot classification)
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+# Load a sentiment / text classification pipeline
+classifier = pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")
 
-# Simple keyword list
-keywords = ["attack", "bomb", "kill", "revenge", "terror", "martyr", "war", "explode"]
+# Example lexicon for radicalization keywords
+radical_keywords = ["attack", "bomb", "kill", "terror"]
 
 def calculate_risk(text):
-    # 1. Check keyword hits
-    keyword_hits = sum([1 for k in keywords if k.lower() in text.lower()])
-    keyword_score = min(keyword_hits / 5, 1.0)
+    """
+    Calculate risk score for a given text.
+    Returns a dictionary: risk_score (0-1), matched_keywords, label
+    """
+    # NLP classification
+    result = classifier(text)[0]
+    label = result['label']  # POSITIVE / NEGATIVE
+    score = result['score']
 
-    # 2. Use ML model for intent
-    labels = ["hate_speech", "terrorism_intent", "neutral"]
-    result = classifier(text, labels)
-    ml_score = 1 - result["scores"][2]  # higher if not 'neutral'
+    # Keyword matching
+    matches = [word for word in radical_keywords if word in text.lower()]
 
-    # 3. Combine
-    risk_score = round(0.6 * ml_score + 0.4 * keyword_score, 2)
-    return risk_score
+    # Risk calculation (example)
+    risk_score = min(1.0, score + 0.2 * len(matches))  # simple formula
+
+    return {
+        "risk_score": round(risk_score, 2),
+        "keywords": matches,
+        "label": label
+    }
