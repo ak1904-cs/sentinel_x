@@ -16,3 +16,8 @@ pyvis
 matplotlib
 Pillow
 requests
+pyvis
+networkx
+python-dateutil
+streamlit-agraph
+
