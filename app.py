@@ -5,7 +5,34 @@ from PIL import Image
 import cv2
 import tempfile
 import os
+import streamlit as st
+import pandas as pd
 from nlp_engine import calculate_risk  # placeholder for Step 6
+from nlp_engine import calculate_risk
+
+st.title("Sentinel-X OSINT Threat Analyzer")
+
+uploaded_file = st.file_uploader("Upload a CSV with posts", type=["csv"])
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    st.write("Data Preview:", df.head())
+
+    if st.button("Run Analysis"):
+        # Process each post
+        results = []
+        for idx, row in df.iterrows():
+            text = row['text'] if 'text' in row else str(row)
+            res = calculate_risk(text)
+            results.append(res)
+
+        # Merge results into dataframe
+        results_df = pd.DataFrame(results)
+        df = pd.concat([df.reset_index(drop=True), results_df], axis=1)
+
+        st.write("Analysis Results:", df)
+        st.success("Analysis complete!")
+
 
 st.set_page_config(page_title="Sentinel-X OSINT Analysis", layout="wide")
 st.title("Sentinel-X: Counter-Terrorism OSINT Analysis & Threat Actor Profiling")
