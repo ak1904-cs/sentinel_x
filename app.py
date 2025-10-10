@@ -1,7 +1,7 @@
 # app.py
 import streamlit as st
 import pandas as pd
-from nlp_engine import calculate_risk
+from nlp_engine import calculate_risk, process_dataframe
 
 st.set_page_config(page_title="Sentinel-X: Counter-Terrorism OSINT Analysis", layout="wide")
 
