@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
+from transformers import pipeline
 from nlp_engine import calculate_risk, process_dataframe
 
 st.set_page_config(page_title="Sentinel-X OSINT Dashboard", layout="wide", page_icon="🛡️")
