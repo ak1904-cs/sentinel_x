@@ -6,6 +6,25 @@ Pillow==11.3.0
 pip==24.3
 setuptools==70.0.0
 wheel==0.43.0
+# Streamlit web app
+streamlit>=1.24.0
+
+# OCR libraries
+easyocr>=1.6.2
+pytesseract>=0.3.10
+opencv-python-headless>=4.8.0
+
+# Image handling
+Pillow>=10.0.0
+numpy>=1.26.0
+
+# Data processing & visualization
+pandas>=2.1.0
+altair>=5.0.1
+
+# Optional: NLP engine dependencies (if your nlp_engine uses transformers, etc.)
+transformers>=4.30.0
+torch>=2.1.0
 
 
 # NLP / ML
@@ -33,4 +52,5 @@ streamlit-agraph==0.0.45
 # Utilities
 python-dateutil==2.9.0.post0
 tqdm==4.67.1
+
 
