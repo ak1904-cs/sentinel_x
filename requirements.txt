@@ -1,24 +1,31 @@
+# Core
 streamlit==1.50.0
-numpy
-pandas
-numpy<2
+numpy<2                 # Ensures compatibility with PyTorch + EasyOCR
+pandas==2.3.3
+Pillow==11.3.0
+
+# NLP / ML
 torch==2.2.1
+transformers==4.57.0
 easyocr==1.7.2
 pytesseract==0.3.13
-opencv-python-headless==4.12.0.88
-transformers
-opencv-python-headless
-scikit-learn
-nltk
-spacy
-easyocr
-pytesseract
-Pillow
-geopy
-networkx
-pyvis
-matplotlib
-requests
-python-dateutil
-streamlit-agraph
+nltk==3.9.2
+spacy==3.8.7
+scikit-learn==1.7.2
+scikit-image==0.25.2
+matplotlib==3.10.7
 
+# Video / OCR
+opencv-python-headless==4.12.0.88
+
+# Visualization / Networking
+altair==5.5.0
+pyvis==0.3.2
+networkx==3.4.2
+geopy==2.4.1
+requests==2.32.5
+streamlit-agraph==0.0.45
+
+# Utilities
+python-dateutil==2.9.0.post0
+tqdm==4.67.1
