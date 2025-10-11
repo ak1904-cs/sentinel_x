@@ -59,6 +59,7 @@ st.header("Step 3: Graph & Geolocation")
 st.write("Graphs, network visualization, and geolocation features can be added here for the next iteration.")
     # --- Optional Visualization ---
     st.subheader("Entity Relationship Graph (Top Keywords)")
-    from graph_engine import display_graph
-    display_graph(df, text_column=text_column)
+    from data_loader import load_uploaded_dataset
+    df = load_uploaded_dataset(uploaded_file, text_column)
+
 
