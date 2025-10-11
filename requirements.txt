@@ -2,13 +2,7 @@ streamlit
 pandas
 numpy
 scikit-learn
-torch==2.2.0
-torchvision==0.17.0
-easyocr==1.7.1
-opencv-python-headless
-pytesseract
 transformers
-textblob
 nltk
 spacy
 matplotlib
@@ -19,3 +13,8 @@ networkx
 pyvis
 python-dateutil
 streamlit-agraph
+opencv-python-headless
+pytesseract
+torch==2.2.0
+torchvision==0.17.0
+easyocr==1.7.1
