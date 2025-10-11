@@ -1,9 +1,9 @@
 streamlit
 numpy
 pandas
-torch==2.2.0
+torch==2.2.1
 torchvision==0.17.1
-torchaudio==2.2.0
+torchaudio==2.2.1
 transformers
 opencv-python-headless
 scikit-learn
@@ -18,3 +18,4 @@ matplotlib
 requests
 python-dateutil
 streamlit-agraph
+
