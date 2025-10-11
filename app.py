@@ -1,4 +1,4 @@
-# app.py (edited multi-modal version)
+# app.py (full version with fixed image OCR)
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -7,6 +7,7 @@ import tempfile
 import os
 from nlp_engine import calculate_risk, process_dataframe
 from data_loader import load_uploaded_dataset
+from PIL import Image as PILImage
 
 st.set_page_config(page_title="Sentinel-X OSINT Dashboard", layout="wide", page_icon="🛡️")
 
@@ -31,7 +32,6 @@ except Exception:
 
 try:
     import pytesseract
-    from PIL import Image as PILImage
     PYTESSERACT_AVAILABLE = True
 except Exception:
     pass
@@ -42,6 +42,7 @@ except Exception:
 def try_read_csv(uploaded_file):
     """Try multiple encodings to read CSV safely."""
     encodings = ["utf-8", "iso-8859-1", "cp1252"]
+    uploaded_file.seek(0)
     for enc in encodings:
         try:
             uploaded_file.seek(0)
@@ -49,12 +50,10 @@ def try_read_csv(uploaded_file):
         except Exception:
             continue
     uploaded_file.seek(0)
-    return pd.read_csv(uploaded_file, engine="python", on_bad_lines="skip")
+    return pd.read_csv(uploaded_file, engine="python", error_bad_lines=False)
 
 def ocr_image_bytes_with_easyocr(image_bytes):
     """Run EasyOCR on bytes and return extracted text."""
-    if not EASYOCR_AVAILABLE:
-        return ""
     reader = easyocr.Reader(['en'], gpu=False)
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
         tf.write(image_bytes)
@@ -73,8 +72,6 @@ def ocr_image_bytes_with_easyocr(image_bytes):
 
 def ocr_image_pytesseract(image_bytes):
     """OCR fallback using pytesseract if available."""
-    if not PYTESSERACT_AVAILABLE:
-        return ""
     try:
         im = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
         text = pytesseract.image_to_string(im)
@@ -86,12 +83,17 @@ def extract_text_from_image(uploaded_image):
     """Extract text from image (EasyOCR first, then pytesseract)."""
     uploaded_image.seek(0)
     bytes_data = uploaded_image.read()
-    text = ""
+    extracted_text = ""
+
+    # Try EasyOCR
     if EASYOCR_AVAILABLE:
-        text = ocr_image_bytes_with_easyocr(bytes_data)
-    if not text and PYTESSERACT_AVAILABLE:
-        text = ocr_image_pytesseract(bytes_data)
-    return text
+        extracted_text = ocr_image_bytes_with_easyocr(bytes_data)
+
+    # Fallback to pytesseract
+    if not extracted_text and PYTESSERACT_AVAILABLE:
+        extracted_text = ocr_image_pytesseract(bytes_data)
+
+    return extracted_text
 
 def extract_text_from_video(uploaded_video, frame_interval=30, max_frames=60):
     """Extract text from video frames."""
@@ -118,11 +120,12 @@ def extract_text_from_video(uploaded_video, frame_interval=30, max_frames=60):
                 if not success:
                     continue
                 image_bytes = encoded_image.tobytes()
-                chunk_text = ""
                 if EASYOCR_AVAILABLE:
                     chunk_text = ocr_image_bytes_with_easyocr(image_bytes)
                 elif PYTESSERACT_AVAILABLE:
                     chunk_text = ocr_image_pytesseract(image_bytes)
+                else:
+                    chunk_text = ""
                 if chunk_text:
                     texts.append(chunk_text)
                     extracted_frames += 1
@@ -177,8 +180,6 @@ else:
             uploaded_file.seek(0)
             df = try_read_csv(uploaded_file)
             st.success(f"CSV loaded: {df.shape[0]} rows, {df.shape[1]} columns")
-
-            # Validate text column
             if text_column not in df.columns:
                 alt_cols = ["clean_text", "text", "tweet", "summary", "body"]
                 found = next((c for c in alt_cols if c in df.columns), None)
@@ -189,7 +190,6 @@ else:
                     st.error(f"Column '{text_column}' not found. Adjust sidebar input.")
                     st.stop()
 
-            # Clean text
             if "clean_text" not in df.columns:
                 df["clean_text"] = df[text_column].astype(str).str.replace(r"http\S+|www\S+|https\S+", "", regex=True)
                 df["clean_text"] = df["clean_text"].str.replace(r'\W', ' ', regex=True).str.lower().str.strip()
@@ -198,7 +198,6 @@ else:
                 processed_df = process_dataframe(df, text_column="clean_text")
             st.success("NLP analysis complete.")
 
-            # Metrics
             total = len(processed_df)
             high_count = len(processed_df[processed_df["risk_category"] == "High"])
             moderate_count = len(processed_df[processed_df["risk_category"] == "Moderate"])
@@ -207,12 +206,10 @@ else:
             col2.metric("High Risk", high_count)
             col3.metric("Moderate Risk", moderate_count)
 
-            # High Risk posts table
             st.subheader("High Risk Posts (top 50)")
             high_df = processed_df[processed_df["risk_category"] == "High"].sort_values("risk_score", ascending=False)
             st.dataframe(high_df.head(50))
 
-            # Pie chart
             rc = processed_df["risk_category"].value_counts().reset_index()
             rc.columns = ["risk_category", "count"]
             pie = alt.Chart(rc).mark_arc(innerRadius=50).encode(
@@ -222,7 +219,6 @@ else:
             ).properties(width=400, height=400)
             st.altair_chart(pie, use_container_width=True)
 
-            # Filter & download
             keyword = st.text_input("Filter posts by keyword:")
             risk_filter = st.multiselect("Select risk categories:", ["High", "Moderate", "Low"], default=["High","Moderate","Low"])
             filtered = processed_df[processed_df["risk_category"].isin(risk_filter)]
@@ -237,12 +233,13 @@ else:
     elif any(t in file_type for t in ["image", "png", "jpg", "jpeg"]):
         st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
         st.info("Extracting text from image...")
+
         try:
-            uploaded_file.seek(0)
             extracted_text = extract_text_from_image(uploaded_file)
             if not extracted_text:
-                st.warning("No text extracted. Install EasyOCR or pytesseract for better OCR.")
+                st.warning("⚠️ No text extracted. Install EasyOCR or pytesseract for better OCR.")
             else:
+                st.success("✅ Text extracted successfully.")
                 st.write(extracted_text[:1000])
                 df_img = pd.DataFrame({"clean_text":[extracted_text]})
                 with st.spinner("Running NLP analysis on image text..."):
