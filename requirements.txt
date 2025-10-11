@@ -20,4 +20,10 @@ pyvis
 networkx
 python-dateutil
 streamlit-agraph
+easyocr
+opencv-python-headless
+pytesseract
+Pillow
+torch
+
 
