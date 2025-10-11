@@ -1,3 +1,4 @@
+# data_loader.py
 import pandas as pd
 import re
 
@@ -12,6 +13,16 @@ def load_hate_speech():
     return df
 
 def load_terrorism():
-    df = pd.read_csv("data/terrorism.csv")
+    df = pd.read_csv("data/terrorism_small.csv")
     df['clean_text'] = df['summary'].astype(str).apply(clean_text)
     return df
+
+def load_uploaded_dataset(uploaded_file, text_column):
+    try:
+        df = pd.read_csv(uploaded_file)
+        if text_column not in df.columns:
+            raise ValueError(f"Column '{text_column}' not found in uploaded dataset.")
+        df['clean_text'] = df[text_column].astype(str).apply(clean_text)
+        return df
+    except Exception as e:
+        raise e
