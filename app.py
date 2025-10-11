@@ -5,6 +5,11 @@ import altair as alt
 from nlp_engine import calculate_risk, process_dataframe
 from data_loader import load_uploaded_dataset
 from graph_engine import build_graph  # REVISION: Assume this returns a graph object or HTML for inline display
+import pandas as pd
+df = pd.DataFrame({'clean_text': ['ISIS calls for jihad in Syria', 'Recruitment by radical group']})
+df['risk_category'] = ['High', 'Moderate']  # From NLP
+graph_html = build_graph(df)
+# Then in app: components.html(graph_html, height=600)
 
 # REVISION: Cache data loading and analysis for better performance on reruns
 @st.cache_data
