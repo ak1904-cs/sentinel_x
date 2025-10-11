@@ -1,6 +1,7 @@
 streamlit
 numpy
 pandas
+easyocr
 torch==2.2.1
 torchvision==0.17.1
 torchaudio==2.2.1
@@ -18,4 +19,5 @@ matplotlib
 requests
 python-dateutil
 streamlit-agraph
+
 
