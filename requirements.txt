@@ -25,5 +25,8 @@ opencv-python-headless
 pytesseract
 Pillow
 torch
+easyocr
+torchvision
+
 
 
