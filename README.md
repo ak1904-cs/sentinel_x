@@ -1,67 +1,36 @@
-Sentinel-X — OSINT Threat Analyzer
-Sentinel-X is a prototype Streamlit application for exploratory OSINT analysis of text extracted from CSVs, images, and videos. It combines lightweight OCR, simple preprocessing, and an NLP-based risk-scoring pipeline to highlight potentially risky content for demo / research purposes.
+# Sentinel-X — OSINT Threat Analyzer
 
-Key components
+Sentinel-X is a prototype Streamlit application for exploratory open-source intelligence (OSINT) analysis. It extracts text from CSVs, images, and videos, applies a lightweight NLP risk-scoring pipeline, and provides an interactive dashboard for inspection and export. This repository is intended for research / demo use only.
 
-Web UI and I/O: app.py — entrypoint and Streamlit UI. See functions app.try_read_csv, app.extract_text_from_image and app.extract_text_from_video.
-NLP/risk pipeline: nlp_engine.process_dataframe and nlp_engine.calculate_risk.
-Data loading helpers: data_loader.load_uploaded_dataset.
-Graph utilities / visualization: graph_engine.py and graph.html.
-OCR utilities & tests: ocr_utils.py and ocr_test.py.
-Example datasets: hate_speech.csv, terrorism_small.csv.
-Repository files
+Key features
+- Robust CSV ingestion and preprocessing.
+- Image and video OCR (EasyOCR or Tesseract fallbacks).
+- NLP-based risk scoring and categorization.
+- Interactive Streamlit dashboard with visualizations and CSV export.
+- Utilities for testing OCR and simple graph visualization hooks.
 
-app.py
-nlp_engine.py
-data_loader.py
-graph_engine.py
-graph.html
-ocr_test.py
-ocr_utils.py
-requirements.txt
-setup.sh
-devcontainer.json
-packages.sh
-runtime.txt
-hate_speech.csv
-terrorism_small.csv
-README.md
-Quickstart (local)
+Quick links (code entrypoints & helpers)
+- App UI: [app.py](app.py) — main Streamlit application including [`app.try_read_csv`](app.py), [`app.extract_text_from_image`](app.py), and [`app.extract_text_from_video`](app.py).
+- NLP/risk engine: [`nlp_engine.process_dataframe`](nlp_engine.py) and [`nlp_engine.calculate_risk`](nlp_engine.py).
+- Data loader: [`data_loader.load_uploaded_dataset`](data_loader.py).
+- Graph utilities / artifact: [graph_engine.py](graph_engine.py) and [graph.html](graph.html).
+- OCR utilities & tests: [utils/ocr_utils.py](utils/ocr_utils.py) and [ocr_test.py](ocr_test.py).
+- Example datasets: [data/hate_speech.csv](data/hate_speech.csv), [data/terrorism_small.csv](data/terrorism_small.csv).
 
-Create a virtualenv and install dependencies:
-(Optional) For OCR/video support install system deps (see packages.sh and setup.sh):
-Run the app:
-How it works (high level)
 
-The Streamlit app (app.py) accepts CSV, image, or video uploads via the sidebar.
-CSV flow: reads CSV robustly with app.try_read_csv, normalizes text into clean_text, then calls nlp_engine.process_dataframe to compute risk scores and categories. Results are displayed and downloadable.
-Image flow: extracts text using EasyOCR (if available) or pytesseract via app.extract_text_from_image and runs the same NLP pipeline.
-Video flow: samples frames using OpenCV and runs OCR on frames via app.extract_text_from_video. Extracted text is analyzed with the NLP pipeline.
-Graphing and relationship visualization tools are available from graph_engine.py and graph.html.
-Important implementation points and hooks
+Requirements
+- Python 3.8+
+- See [requirements.txt](requirements.txt) for Python packages.
+- Optional system packages for OCR/video:
+  - Tesseract (for pytesseract)
+  - OpenCV system libs (for cv2)
+  - Additional build deps for EasyOCR (GPU optional)
 
-OCR: app tries EasyOCR first and falls back to pytesseract. See app.ocr_image_bytes_with_easyocr and app.ocr_image_pytesseract.
-NLP pipeline: Core scoring and preprocessing live in nlp_engine.process_dataframe and nlp_engine.calculate_risk.
-Data loader: helper(s) in data_loader.load_uploaded_dataset provide an abstraction for different upload formats.
-Development & testing
+Installation (local)
+```sh
+# Create and activate virtualenv
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-The repository includes a devcontainer config at devcontainer.json for reproducible development.
-Streamlit-specific environment hints are in packages.sh and runtime.txt.
-Use ocr_test.py and ocr_utils.py to validate OCR behavior with different engines.
-Security, ethics, and disclaimer
-
-This project is a prototype / demo. It is not intended for operational deployment, automated actionable decisions, or any use that may harm people.
-Outputs should be treated as exploratory indicators requiring human review.
-See the top of app.py for the visible disclaimer text.
-Contributing
-
-Report issues or open PRs for bug fixes, improved OCR handling, better preprocessing, or more robust risk models.
-When adding heavy dependencies (e.g., EasyOCR, OpenCV, Tesseract), update requirements.txt and the setup scripts (.streamlit / setup.sh).
-License
-
-Add your preferred license file to the repo (e.g., LICENSE) to state permitted uses.
-If you want, I can:
-
-Draft a CONTRIBUTING.md or LICENSE file.
-Add a minimal CI job to run linting or tests.
-Produce a compact developer checklist to get the devcontainer running.
+# Install Python deps
+pip install -r 
