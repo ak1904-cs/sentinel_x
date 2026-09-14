@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Sentinel-X Runtime Output & Logs
+logs/*.log
+temp/
+exports/
+.env
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ML / AI model caches
+.EasyOCR/
+.huggingface/
+.cache/
+models/
+
+# Python tooling
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Generated files
+*.log
+*.tmp
+*.mp4
+*.avi
