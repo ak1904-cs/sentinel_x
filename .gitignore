@@ -42,3 +42,8 @@ models/
 *.tmp
 *.mp4
 *.avi
+
+# Local SQLite database
+storage/*.db
+storage/*.sqlite
+storage/*.sqlite3

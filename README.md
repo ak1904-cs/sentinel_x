@@ -1,124 +1,167 @@
-# 🛡️ Sentinel-X — Multimodal OSINT Threat Intelligence & Risk Analysis Platform
+# 🛡️ Sentinel-X — End-to-End Human-in-the-Loop OSINT Threat Intelligence Platform
 
-**Sentinel-X** is an open-source Multimodal Open-Source Intelligence (OSINT) Threat Analysis & Risk Profiling Platform designed to ingest text, CSV datasets, images, and video files, extract intelligence, identify named entities, score risk explainably, and visualize relationship networks.
+**Sentinel-X** is an open-source, human-in-the-loop Multimodal Open-Source Intelligence (OSINT) Threat Analysis & Case Management Platform. It ingests public web content, RSS feeds, CSV datasets, images, and video files, detects threat signals and named entities, computes explainable risk scores, hashes evidence cryptographically via SHA-256, and routes priority items to authorized human analysts for review, escalation, or dismissal.
+
+> **Human-in-the-Loop Principle**: AI assists human analysts by surfacing and prioritizing potential threat signals; it does not autonomously accuse, identify, or punish individuals.
 
 ---
 
-## 🌟 Architecture & Highlights
+## 🌟 End-to-End Workflow Architecture
 
 ```text
-                               SENTINEL-X PLATFORM
-                                        │
-           ┌────────────────────────────┼────────────────────────────┐
-           ↓                            ↓                            ↓
-         TEXT                          CSV                        MEDIA
-     (Direct Input)           (Multi-encoding / Gzip)        (Images & Videos)
-           │                            │                            │
-           │                            │                       OCR Engine
-           │                            │               (EasyOCR + Tesseract)
-           │                            │                            │
-           └────────────────────────────┼────────────────────────────┘
-                                        ↓
-                               Text Preprocessing
-                      (Unicode, URLs, Hashtags, Mentions)
-                                        ↓
-               ┌────────────────────────┴────────────────────────┐
-               ↓                                                 ↓
-        NLP Engine (TF-IDF)                             Threat Indicator Engine
-   (Hate & Abusive Language ML)                    (Threats, Weapons & Planning)
-               ↓                                                 ↓
-               └────────────────────────┬────────────────────────┘
-                                        ↓
-                               spaCy NER Engine
-                       (PERSON, ORG, GPE, LOC, DATE, EVENT)
-                                        ↓
-                       Configurable Explainable Risk Engine
-                             (Score 0-100 & Reasons)
-                                        ↓
-                       Risk-Aware Network Graph Engine
-                           (PyVis Interactive Graph)
-                                        ↓
-                          Analyst Streamlit Dashboard
-                           (Reports / PDF / JSON Export)
+                     ┌──────────────────────┐
+                     │      SENTINEL-X      │
+                     │ OSINT THREAT INTEL   │
+                     └──────────┬───────────┘
+                                │
+                         SOURCE INGESTION
+                                │
+              ┌─────────────────┼─────────────────┐
+              ▼                 ▼                 ▼
+       Public Web          RSS Feeds        User Uploads
+      Page Fetcher          Collector     (CSV/Image/Video)
+              │                 │                 │
+              └─────────────────┼─────────────────┘
+                                ▼
+                         DATA NORMALization
+                                │
+                ┌───────────────┼───────────────┐
+                ▼               ▼               ▼
+              TEXT            IMAGE           VIDEO
+                                │               │
+                               OCR             Frames
+                                │               │
+                └───────────────┼───────────────┘
+                                ▼
+                         NLP ANALYSIS
+                                │
+                 ┌──────────────┼──────────────┐
+                 ▼              ▼              ▼
+             Threat          NER           Context
+           Indicators      Entities       Classifier
+                 │              │              │
+                 └──────────────┼──────────────┘
+                                ▼
+                         RISK ENGINE
+                  (Configurable 0-100 Score)
+                                │
+                                ▼
+                    SHA-256 EVIDENCE HASHING
+                                │
+                         SQLITE DATABASE
+                                │
+                    AUTOMATED CASE GENERATION
+                                │
+                   ┌────────────┴────────────┐
+                   ▼                         ▼
+              Low/Moderate                  High
+                   │                         │
+               Dashboard               Analyst Queue
+                                             │
+                                             ▼
+                                      HUMAN ANALYST
+                                             │
+                                  ┌──────────┴─────────┐
+                                  ▼                    ▼
+                              Dismiss              Escalate
+                                                       │
+                                                       ▼
+                                             Official Report PDF
 ```
 
 ---
 
-## ✨ Features
+## ✨ Core Features
 
-- **Multimodal Intelligence Pipeline**: Ingests direct text, CSV files (including gzipped datasets), images (PNG/JPG), and video files (MP4/MOV).
-- **Intelligent Media OCR**: Image preprocessing (grayscale, CLAHE contrast enhancement) with EasyOCR primary engine & Tesseract fallback. Samples video frames with timestamp deduplication.
-- **Dedicated Threat & Weapon Engine**: Detects violent action words, radicalization keywords, weapon/indicator lexicons (`AK-47`, `C4`, `RPG`, `IED`), and operational planning patterns (Time + Location + Action).
-- **spaCy Named Entity Recognition (NER)**: Extracts `PERSON`, `ORG`, `GPE`, `LOC`, `DATE`, and `EVENT` with canonical entity alias normalization (`NYC` $\rightarrow$ `New York`, `ISIS` $\rightarrow$ `ISIS`).
-- **Explainable Risk Scoring**: Configurable weights in `config/settings.py` generating a 0–100 risk score, risk level (`HIGH`, `MODERATE`, `LOW`), and human-readable bulleted reasoning.
-- **Interactive Network Graph**: Risk-colored PyVis entity relationship network (`Red` for High Risk, `Orange` for Moderate Risk, `Green` for Low Risk) with interactive tooltips and connection strength.
-- **Automated Intelligence Reports**: One-click generation of JSON, CSV, and formatted PDF intelligence reports.
+1. **Multimodal Ingestion Layer (`ingestion/`)**:
+   - Ingests direct text, CSV datasets (including gzipped GTD format), images (PNG/JPG), and video files (MP4/MOV).
+   - Ingests public web pages (`web_ingestor.py`) and public RSS/Atom feeds (`rss_ingestor.py`).
+2. **Dual ML & Threat Engines (`engines/`)**:
+   - TF-IDF + Logistic Regression ML classifier trained on `data/hate_speech.csv` (**85.4% Accuracy**, **86.9% F1-Score**).
+   - Dedicated threat, radicalization, and weapon lexicons (`AK-47`, `C4`, `RPG`, `IED`).
+   - Operational planning pattern detection (Location + Time + Action).
+   - spaCy Named Entity Recognition (`PERSON`, `ORG`, `GPE`, `LOC`, `DATE`, `EVENT`) with canonical alias normalization (`NYC` $\rightarrow$ `New York`, `ISIS` $\rightarrow$ `ISIS`).
+3. **Configurable Explainable Risk Scoring**:
+   - Weights configured in `config/settings.py` generating 0–100 risk score and transparent bulleted reasons.
+4. **Cryptographic SHA-256 Evidence Hashing & SQLite Storage (`storage/`)**:
+   - Computes SHA-256 evidence content hashes for tamper-proof provenance.
+   - Stores analyses, cases, evidence records, analyst notes, and audit event logs in SQLite (`storage/sentinel_x.db`).
+5. **Human-in-the-Loop Priority Case Review Queue (`services/case_service.py`)**:
+   - Automatically flags High and Moderate risk items into priority cases (`NEW` status).
+   - Human analysts review source evidence, add notes, and trigger official decisions: `Escalate Case` or `Dismiss Case`.
+6. **Risk-Aware Network Graphing & PDF Reports**:
+   - Interactive PyVis network graph (`Red` = High Risk, `Orange` = Moderate Risk, `Green` = Low Risk).
+   - One-click JSON, CSV, and formatted PDF intelligence report generation.
 
 ---
 
-## 🛠️ Project Structure
+## 📁 Repository Structure
 
 ```text
 sentinel-x/
 │
-├── app.py                     # Analyst Dashboard (Streamlit Frontend)
+├── app.py                         # Streamlit Analyst Dashboard (11 Tabs)
 ├── config/
-│   └── settings.py            # Centralized settings & configurable risk weights
+│   └── settings.py                # Platform parameters, weights & thresholds
+├── models/
+│   ├── analysis_models.py         # AnalysisInput & AnalysisResult models
+│   ├── case_models.py             # CaseRecord, CaseStatus, CasePriority models
+│   └── evidence_models.py         # EvidenceRecord SHA-256 model
+├── storage/
+│   ├── database.py                # SQLite Connection & Schema Initializer
+│   └── repository.py              # CRUD Repository for DB tables
+├── ingestion/
+│   ├── source_manager.py          # Unified source routing dispatcher
+│   ├── web_ingestor.py            # Public webpage content extractor
+│   ├── rss_ingestor.py            # RSS/Atom feed parser
+│   └── api_ingestor.py            # Authorized API adapter
 ├── engines/
-│   ├── nlp_engine.py          # TF-IDF + Logistic Regression ML Classifier
-│   ├── threat_engine.py       # Threat lexicons, weapon indicators & planning rules
-│   ├── risk_engine.py         # Configurable explainable risk engine (0-100 score)
-│   ├── entity_engine.py       # spaCy NER + entity normalization
-│   ├── graph_engine.py        # Risk-aware PyVis interactive network graph
-│   └── ocr_engine.py          # Image & Video OCR pipeline (EasyOCR + Tesseract)
+│   ├── nlp_engine.py              # TF-IDF ML Classifier
+│   ├── threat_engine.py           # Violent keywords, weapons & planning rules
+│   ├── entity_engine.py           # spaCy NER + canonical normalization
+│   ├── risk_engine.py             # Configurable 0-100 explainable risk engine
+│   ├── graph_engine.py            # PyVis interactive network graph
+│   └── ocr_engine.py              # EasyOCR + Tesseract image & video frame OCR
 ├── services/
-│   ├── csv_service.py         # Multi-encoding CSV batch loader & processor
-│   ├── image_service.py       # Image threat analysis service
-│   ├── video_service.py       # Video timeline frame sampling service
-│   └── report_service.py      # Automated PDF/JSON/CSV report generator
+│   ├── analysis_service.py        # Central pipeline orchestrator
+│   ├── case_service.py            # Human analyst case review workflow
+│   ├── evidence_service.py        # SHA-256 evidence hashing & provenance
+│   ├── csv_service.py             # CSV batch loader & GTD dataset processor
+│   ├── image_service.py           # Image OCR threat service
+│   ├── video_service.py           # Video frame sampling & timeline service
+│   └── report_service.py          # Automated PDF, JSON & CSV report generator
 ├── utils/
-│   ├── text_utils.py          # Text normalization & signal extraction
-│   ├── file_utils.py          # File type validation & temporary file handling
-│   └── logging_utils.py       # Application logging (logs/sentinel_x.log)
-├── data/                      # Raw datasets & cached ML models
-├── tests/                     # Unit and integration test suite
-├── requirements.txt           # Cleaned dependency manifest
-└── README.md                  # System Documentation
+│   ├── text_utils.py              # Text normalization & signal extraction
+│   ├── file_utils.py              # Security file validation & size checking
+│   └── logging_utils.py           # Application logger & audit event logger
+├── data/                          # Training datasets & cached ML models
+├── tests/                         # Full automated unit test suite
+├── requirements.txt               # Dependencies manifest
+└── README.md                      # Documentation
 ```
 
 ---
 
-## ⚙️ Installation & Usage
+## ⚙️ Installation & Running
 
-### 1. Clone & Install Dependencies
 ```bash
+# 1. Clone & Install Dependencies
 git clone https://github.com/your-username/sentinel-x.git
 cd sentinel-x
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
-```
 
-### 2. Run Automated Tests
-```bash
+# 2. Execute Automated Unit Tests
 python -m unittest discover -s tests -p "test_*.py"
-```
 
-### 3. Launch Streamlit Analyst Dashboard
-```bash
+# 3. Launch Dashboard App
 streamlit run app.py
 ```
 
 ---
 
-## 🔬 Methodology & Evaluation
+## ⚠️ Privacy & Ethical OSINT Boundaries
 
-- **ML Classifier Baseline**: TF-IDF + Logistic Regression trained on `data/hate_speech.csv` achieving **85.4% Accuracy** and **86.9% F1-Score**.
-- **Configurable Risk Scoring**:
-  $$\text{Risk Score} = (0.30 \times \text{Threat}) + (0.30 \times \text{Context ML}) + (0.20 \times \text{spaCy Entity}) + (0.20 \times \text{Planning Signal})$$
-- Weights can be adjusted in `config/settings.py`.
-
----
-
-## ⚠️ Disclaimer
-
-*For OSINT research, threat analysis demonstration, and educational use only.*
+- **Target Data**: Focuses exclusively on public web content, RSS feeds, authorized APIs, and user-submitted evidence.
+- **Strictly Excluded**: Private credential harvesting, bypassing authentication, unauthorized scraping, or evading platform controls.
+- **Analyst Role**: AI generates risk scores and explanations to assist decision-makers; human analysts make final review decisions.
